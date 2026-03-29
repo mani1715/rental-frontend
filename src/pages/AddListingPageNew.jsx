@@ -261,9 +261,10 @@ const AddListingPageNew = () => {
     
     console.log("getFullImageUrl input:", url);
     
-    // If it's a blob URL (local preview), return as is
+    // NEVER use blob URLs - they are temporary and won't work after refresh
     if (url.startsWith('blob:')) {
-      return url;
+      console.warn("WARNING: Blob URL detected, this should not happen!");
+      return 'https://dummyimage.com/150x150/cccccc/666666&text=Uploading...';
     }
     // If it's already a full URL, return as is
     if (url.startsWith('http://') || url.startsWith('https://')) {
@@ -279,6 +280,15 @@ const AddListingPageNew = () => {
     const fullUrl = `${BACKEND_URL}${url}`;
     console.log("getFullImageUrl output (path):", fullUrl);
     return fullUrl;
+  };
+
+  // Check if URL is a valid server URL (not blob)
+  const isValidServerUrl = (url) => {
+    if (!url) return false;
+    // Blob URLs are NOT valid for saving
+    if (url.startsWith('blob:')) return false;
+    // Must be a real URL or path
+    return url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/');
   };
 
   // Handle file selection and upload to server immediately
@@ -400,11 +410,7 @@ const AddListingPageNew = () => {
   }, [token]);
 
   const removeImage = (indexToRemove) => {
-    // Revoke blob URL to prevent memory leak
-    const urlToRemove = formData.images[indexToRemove];
-    if (urlToRemove && urlToRemove.startsWith('blob:')) {
-      URL.revokeObjectURL(urlToRemove);
-    }
+    console.log("Removing image at index:", indexToRemove);
     setFormData(prev => ({
       ...prev,
       images: prev.images.filter((_, index) => index !== indexToRemove)
@@ -520,6 +526,26 @@ const AddListingPageNew = () => {
       return;
     }
 
+    // IMPORTANT: Filter out any blob URLs - only keep real server URLs
+    const validImages = formData.images.filter(url => {
+      if (!url) return false;
+      if (url.startsWith('blob:')) {
+        console.warn("Filtering out blob URL:", url);
+        return false;
+      }
+      return true;
+    });
+
+    console.log("=== Submitting Listing ===");
+    console.log("Original images:", formData.images);
+    console.log("Valid images (no blobs):", validImages);
+
+    if (formData.images.length > 0 && validImages.length === 0) {
+      setError('Images are still uploading. Please wait and try again.');
+      setLoading(false);
+      return;
+    }
+
     try {
       let googleMapsLink = '';
       if (formData.latitude && formData.longitude) {
@@ -539,16 +565,18 @@ const AddListingPageNew = () => {
         description: formData.description,
         bedrooms: Number(formData.bedrooms),
         bathrooms: Number(formData.bathrooms),
-        images: formData.images,
+        images: validImages,  // Use filtered images only
         status: 'available'
       };
+
+      console.log("Listing data to submit:", JSON.stringify(listingData, null, 2));
 
       const response = await axios.post(`${API_URL}/api/listings`, listingData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       if (response.data.success) {
-        console.log('Listing created:', response.data);
+        console.log('✅ Listing created:', response.data);
         alert('Listing created successfully!');
         navigate('/owner/dashboard');
       }
