@@ -245,10 +245,21 @@ const AddListingPageNew = () => {
     }));
   };
 
-  const handleImageInput = (e) => {
-    const urls = e.target.value.split('\n').filter(url => url.trim());
-    setFormData(prev => ({ ...prev, images: urls }));
-  };
+ const handleImageInput = (e) => {
+  const urls = e.target.value
+    .split('\n')
+    .map(url => url.trim())
+    .filter(url =>
+      url &&
+      !url.startsWith('blob:') &&   // ❌ BLOCK blob
+      (url.startsWith('http://') || url.startsWith('https://'))
+    );
+
+  setFormData(prev => ({
+    ...prev,
+    images: urls
+  }));
+};
 
   // Helper function to get full image URL
   const getFullImageUrl = (url) => {
