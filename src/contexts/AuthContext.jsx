@@ -63,18 +63,34 @@ export const AuthProvider = ({ children }) => {
 
   // ✅ REGISTER (FIXED)
   const register = async (data) => {
+    // Validate inputs
+    if (!data.email || !data.password || !data.name) {
+      console.error("❌ Register error: All fields are required");
+      return { success: false, message: "Please fill in all required fields" };
+    }
+
     setLoading(true);
 
     try {
+      console.log("=== REGISTER REQUEST ===");
       console.log("🚀 Register API CALL →", `${BASE_URL}/api/auth/register`);
+      console.log("📧 Email:", data.email);
+      console.log("👤 Name:", data.name);
 
-      const res = await api.post("/api/auth/register", data);
+      const res = await api.post("/api/auth/register", {
+        name: data.name.trim(),
+        email: data.email.trim(),
+        password: data.password,
+      });
 
-      console.log("✅ Register response:", res.data);
+      console.log("✅ Register response status:", res.status);
+      console.log("✅ Register response data:", res.data);
 
       if (res.data.success) {
         const { token: newToken, user: userData, requiresRoleSelection } =
           res.data;
+
+        console.log("🎉 Registration successful! User:", userData?.email);
 
         localStorage.setItem("token", newToken);
         setToken(newToken);
@@ -87,40 +103,70 @@ export const AuthProvider = ({ children }) => {
         };
       }
 
-      return { success: false, message: "Registration failed" };
+      console.error("❌ Registration failed - success:false in response");
+      return { success: false, message: res.data.message || "Registration failed" };
     } catch (err) {
-      console.error("❌ Register error:", err);
+      console.error("=== REGISTER ERROR ===");
+      console.error("❌ Error status:", err.response?.status);
+      console.error("❌ Error data:", err.response?.data);
+      console.error("❌ Error message:", err.message);
+
+      let errorMessage = "Registration failed. Please try again.";
+      
+      if (err.response?.status === 400) {
+        errorMessage = err.response?.data?.message || 
+                      err.response?.data?.detail || 
+                      "Invalid registration data";
+      } else if (err.response?.status === 409) {
+        errorMessage = "Email already exists. Please use a different email.";
+      } else if (err.response?.status === 500) {
+        errorMessage = "Server error. Please try again later.";
+      } else if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
 
       return {
         success: false,
-        message:
-          err.response?.data?.detail ||
-          err.response?.data?.message ||
-          "Registration failed",
+        message: errorMessage,
       };
     } finally {
       setLoading(false);
+      console.log("=== REGISTER REQUEST COMPLETE ===");
     }
   };
 
   // ✅ LOGIN (FIXED)
   const login = async (email, password) => {
+    // Validate inputs
+    if (!email || !password) {
+      console.error("❌ Login error: Email and password are required");
+      return { success: false, message: "Please enter email and password" };
+    }
+
     setLoading(true);
 
     try {
+      console.log("=== LOGIN REQUEST ===");
       console.log("🚀 Login API CALL →", `${BASE_URL}/api/auth/login`);
+      console.log("📧 Email:", email);
+      console.log("🔑 Password length:", password.length);
 
       const res = await api.post("/api/auth/login", {
-        email,
-        password,
+        email: email.trim(),
+        password: password,
       });
 
-      console.log("✅ Login response:", res.data);
+      console.log("✅ Login response status:", res.status);
+      console.log("✅ Login response data:", res.data);
 
       if (res.data.success) {
         const { token: newToken, user: userData, requiresRoleSelection } =
           res.data;
 
+        console.log("🎉 Login successful! User:", userData?.email);
+        
         localStorage.setItem("token", newToken);
         setToken(newToken);
         setUser(userData);
@@ -132,19 +178,40 @@ export const AuthProvider = ({ children }) => {
         };
       }
 
-      return { success: false, message: "Login failed" };
+      console.error("❌ Login failed - success:false in response");
+      return { success: false, message: res.data.message || "Login failed" };
     } catch (err) {
-      console.error("❌ Login error:", err);
+      console.error("=== LOGIN ERROR ===");
+      console.error("❌ Error status:", err.response?.status);
+      console.error("❌ Error data:", err.response?.data);
+      console.error("❌ Error message:", err.message);
+
+      // Handle specific error codes
+      let errorMessage = "Login failed. Please try again.";
+      
+      if (err.response?.status === 401) {
+        errorMessage = err.response?.data?.message || 
+                      err.response?.data?.detail || 
+                      "Invalid email or password";
+      } else if (err.response?.status === 404) {
+        errorMessage = "User not found. Please check your email.";
+      } else if (err.response?.status === 500) {
+        errorMessage = "Server error. Please try again later.";
+      } else if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (!navigator.onLine) {
+        errorMessage = "No internet connection. Please check your network.";
+      }
 
       return {
         success: false,
-        message:
-          err.response?.data?.detail ||
-          err.response?.data?.message ||
-          "Login failed",
+        message: errorMessage,
       };
     } finally {
       setLoading(false);
+      console.log("=== LOGIN REQUEST COMPLETE ===");
     }
   };
 
