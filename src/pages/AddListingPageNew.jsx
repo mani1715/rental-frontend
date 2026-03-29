@@ -379,14 +379,6 @@ const AddListingPageNew = () => {
 
   // Keep old uploadFiles for compatibility
   const uploadFiles = uploadFilesToServer;
-      console.error('=== Upload Error ===');
-      console.error('Error details:', error.response?.data || error.message);
-      alert('Failed to upload some images. Please try again.');
-    } finally {
-      setUploadingImages(false);
-      console.log("=== Upload Complete ===");
-    }
-  };
 
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
