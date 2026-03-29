@@ -329,18 +329,19 @@ const AddListingPageNew = () => {
       return;
     }
 
-    console.log("Calling AI API...");
-    console.log("API URL:", `${API_URL}/api/ai/generate-description`);
-    
+    // Validate token before sending request
     const token = localStorage.getItem('token');
-    console.log("Token being sent:", token);
-    
     if (!token) {
-      alert('Please login to use AI description generation.');
+      alert('Please login again to use AI description generation.');
       return;
     }
 
+    console.log("=== AI Description Generation ===");
+    console.log("API URL:", `${API_URL}/api/ai/generate-description`);
+    console.log("Token present:", !!token);
+
     setAiLoading(true);
+    
     try {
       const requestData = {
         title: formData.title,
@@ -350,7 +351,7 @@ const AddListingPageNew = () => {
         facilities: formData.facilities.join(', ') || 'Basic amenities'
       };
       
-      console.log("Request data:", requestData);
+      console.log("Request data:", JSON.stringify(requestData, null, 2));
       
       const response = await axios.post(
         `${API_URL}/api/ai/generate-description`,
@@ -359,29 +360,61 @@ const AddListingPageNew = () => {
           headers: { 
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}` 
-          } 
+          },
+          timeout: 30000 // 30 second timeout
         }
       );
 
-      console.log("AI response:", response.data);
+      console.log("AI Response Status:", response.status);
+      console.log("AI Response Data:", JSON.stringify(response.data, null, 2));
       
       if (response.data.success) {
         setFormData(prev => ({
           ...prev,
           description: response.data.description
         }));
+        console.log("Description generated successfully!");
       } else {
-        alert(response.data.message || 'Failed to generate description');
+        const errorMsg = response.data.message || 'Failed to generate description';
+        console.error("AI returned error:", errorMsg);
+        alert(errorMsg);
       }
     } catch (err) {
-      console.error('AI error:', err.response?.data || err.message);
-      const errorMessage = err.response?.data?.message || 
-                          err.response?.data?.detail || 
-                          err.message ||
-                          'Failed to generate description. Please try again.';
-      alert(errorMessage);
+      console.error("=== AI Error ===");
+      console.error("Error Status:", err.response?.status);
+      console.error("Error Data:", err.response?.data);
+      console.error("Error Message:", err.message);
+      
+      // Handle specific error codes with user-friendly messages
+      let userMessage = '';
+      const statusCode = err.response?.status;
+      
+      if (statusCode === 503) {
+        userMessage = 'AI service is temporarily unavailable. Please try again in a few moments.';
+      } else if (statusCode === 502) {
+        userMessage = 'AI service is currently down. Please try again later.';
+      } else if (statusCode === 504) {
+        userMessage = 'AI request timed out. Please try again.';
+      } else if (statusCode === 500) {
+        userMessage = 'Server error occurred. Please try again later.';
+      } else if (statusCode === 401) {
+        userMessage = 'Session expired. Please login again.';
+      } else if (statusCode === 404) {
+        userMessage = 'AI service endpoint not found. Please contact support.';
+      } else if (err.code === 'ECONNABORTED') {
+        userMessage = 'Request timed out. Please check your connection and try again.';
+      } else if (!navigator.onLine) {
+        userMessage = 'No internet connection. Please check your network.';
+      } else {
+        userMessage = err.response?.data?.message || 
+                     err.response?.data?.detail || 
+                     'AI service failed. Please try again.';
+      }
+      
+      alert(userMessage);
     } finally {
       setAiLoading(false);
+      console.log("=== AI Request Complete ===");
     }
   };
 
