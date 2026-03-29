@@ -252,7 +252,15 @@ const AddListingPageNew = () => {
 
   // Helper function to get full image URL
   const getFullImageUrl = (url) => {
-    if (!url) return 'https://dummyimage.com/150x150/cccccc/666666&text=No+Image';
+    const BACKEND_URL = "https://rental-backend-production-3c03.up.railway.app";
+    
+    if (!url) {
+      console.log("getFullImageUrl: No URL provided");
+      return 'https://dummyimage.com/150x150/cccccc/666666&text=No+Image';
+    }
+    
+    console.log("getFullImageUrl input:", url);
+    
     // If it's a blob URL (local preview), return as is
     if (url.startsWith('blob:')) {
       return url;
@@ -261,53 +269,48 @@ const AddListingPageNew = () => {
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
-    // If it's a relative path, prepend the API URL
-    if (url.startsWith('/')) {
-      return `${API_URL}${url}`;
+    // If it's just a filename (e.g., "uuid.jpg"), construct full URL
+    if (!url.startsWith('/')) {
+      const fullUrl = `${BACKEND_URL}/uploads/${url}`;
+      console.log("getFullImageUrl output (filename):", fullUrl);
+      return fullUrl;
     }
-    // Otherwise, assume it's a path that needs the full URL
-    return `${API_URL}/${url}`;
+    // If it's a relative path starting with /, prepend backend URL
+    const fullUrl = `${BACKEND_URL}${url}`;
+    console.log("getFullImageUrl output (path):", fullUrl);
+    return fullUrl;
   };
 
-  // Show immediate preview using URL.createObjectURL
-  const handleFileInput = (e) => {
+  // Handle file selection and upload to server immediately
+  const handleFileInput = async (e) => {
     if (e.target.files && e.target.files.length > 0) {
       const files = Array.from(e.target.files);
+      console.log("=== Files Selected ===");
+      console.log("Number of files:", files.length);
       
-      // Show immediate local preview
-      const localPreviews = files
-        .filter(file => file.type.startsWith('image/'))
-        .map(file => URL.createObjectURL(file));
-      
-      if (localPreviews.length > 0) {
-        setFormData(prev => ({
-          ...prev,
-          images: [...prev.images, ...localPreviews]
-        }));
-        console.log("Local previews added:", localPreviews);
-      }
-      
-      // Then upload to server (optional - can be done on form submit)
-      // uploadFiles(files);
+      // Upload files to server immediately
+      await uploadFilesToServer(files);
     }
   };
 
-  const uploadFiles = async (files) => {
+  // Upload files to server and get permanent URLs
+  const uploadFilesToServer = async (files) => {
     if (files.length === 0) return;
     setUploadingImages(true);
 
-    console.log("=== Starting Image Upload ===");
-    console.log("Files to upload:", files.length);
+    console.log("=== Starting Image Upload to Server ===");
+    const BACKEND_URL = "https://rental-backend-production-3c03.up.railway.app";
 
     try {
       const uploadedUrls = [];
+      
       for (const file of files) {
         if (!file.type.startsWith('image/')) {
           console.log("Skipping non-image file:", file.name);
           continue;
         }
 
-        console.log("Uploading file:", file.name, "Size:", file.size);
+        console.log("Uploading file:", file.name, "Size:", file.size, "Type:", file.type);
 
         const formData = new FormData();
         formData.append('file', file);
@@ -315,26 +318,41 @@ const AddListingPageNew = () => {
         const token = localStorage.getItem('token');
         console.log("Token present:", !!token);
 
-        const response = await axios.post(`${API_URL}/api/upload`, formData, {
+        if (!token) {
+          alert("Please login to upload images");
+          setUploadingImages(false);
+          return;
+        }
+
+        const response = await axios.post(`${BACKEND_URL}/api/upload`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token}`
+            'Authorization': `Bearer ${token}`
           }
         });
 
-        console.log("Upload response:", response.data);
+        console.log("Upload response:", JSON.stringify(response.data, null, 2));
 
         if (response.data.success) {
-          const imageUrl = response.data.url || response.data.image || response.data.imageUrl;
-          console.log("Image URL received:", imageUrl);
+          // Get the image URL from response - try multiple fields
+          let imageUrl = response.data.fullUrl || response.data.imageUrl || response.data.url || response.data.image;
           
-          // Get the full URL
-          const fullUrl = getFullImageUrl(imageUrl);
-          console.log("Full Image URL:", fullUrl);
+          console.log("Raw image URL from response:", imageUrl);
           
-          uploadedUrls.push(fullUrl);
+          // If it's a relative path, make it absolute
+          if (imageUrl && !imageUrl.startsWith('http')) {
+            if (imageUrl.startsWith('/')) {
+              imageUrl = `${BACKEND_URL}${imageUrl}`;
+            } else {
+              imageUrl = `${BACKEND_URL}/uploads/${imageUrl}`;
+            }
+          }
+          
+          console.log("Final image URL:", imageUrl);
+          uploadedUrls.push(imageUrl);
         } else {
           console.error("Upload failed:", response.data.message);
+          alert(`Upload failed: ${response.data.message || 'Unknown error'}`);
         }
       }
 
@@ -345,9 +363,22 @@ const AddListingPageNew = () => {
           ...prev,
           images: [...prev.images, ...uploadedUrls]
         }));
-        console.log("Images added to form data");
+        console.log("✅ Images added to form successfully");
       }
     } catch (error) {
+      console.error('=== Upload Error ===');
+      console.error('Error status:', error.response?.status);
+      console.error('Error data:', error.response?.data);
+      console.error('Error message:', error.message);
+      alert(`Failed to upload image: ${error.response?.data?.detail || error.message}`);
+    } finally {
+      setUploadingImages(false);
+      console.log("=== Upload Complete ===");
+    }
+  };
+
+  // Keep old uploadFiles for compatibility
+  const uploadFiles = uploadFilesToServer;
       console.error('=== Upload Error ===');
       console.error('Error details:', error.response?.data || error.message);
       alert('Failed to upload some images. Please try again.');

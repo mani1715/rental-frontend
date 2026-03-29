@@ -1,18 +1,38 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import BASE_URL from '../config/api.js';
 import { Button } from './ui/button';
 
+const BACKEND_URL = 'https://rental-backend-production-3c03.up.railway.app';
 const FALLBACK_IMAGE = 'https://dummyimage.com/800x600/cccccc/666666&text=No+Image';
 
 export const ImageCarousel = ({ images, title }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const getImageUrl = (img) => {
-    if (!img) return FALLBACK_IMAGE;
-    if (img.startsWith('http')) return img;
-    if (img.startsWith('/uploads/')) return `${BASE_URL}${img}`;
-    return `${BASE_URL}/uploads/${img}`;
+    if (!img) {
+      console.log("ImageCarousel: No image provided");
+      return FALLBACK_IMAGE;
+    }
+    
+    console.log("ImageCarousel: Processing image:", img);
+    
+    // Already a full URL
+    if (img.startsWith('http://') || img.startsWith('https://')) {
+      return img;
+    }
+    
+    // Relative path with /uploads/
+    if (img.startsWith('/uploads/')) {
+      return `${BACKEND_URL}${img}`;
+    }
+    
+    // Relative path with /
+    if (img.startsWith('/')) {
+      return `${BACKEND_URL}${img}`;
+    }
+    
+    // Just filename
+    return `${BACKEND_URL}/uploads/${img}`;
   };
 
   const goToPrevious = () => {

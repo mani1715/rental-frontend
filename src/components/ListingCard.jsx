@@ -4,8 +4,9 @@ import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { useWishlist } from '../contexts/WishlistContext';
-import BASE_URL from '../config/api.js';
 import { useAuth } from '../contexts/AuthContext';
+
+const BACKEND_URL = "https://rental-backend-production-3c03.up.railway.app";
 
 export const ListingCard = ({ listing }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -53,13 +54,42 @@ export const ListingCard = ({ listing }) => {
     }
   };
 
-  const rawImage = listing.images?.[0];
+  // Get image URL with proper backend URL
   const getImageUrl = (img) => {
-    if (!img) return 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2';
-    if (img.startsWith('http')) return img;
-    if (img.startsWith('/uploads/')) return `${BASE_URL}${img}`;
-    return `${BASE_URL}/uploads/${img}`;
+    if (!img) {
+      console.log("ListingCard: No image for listing:", listing.title);
+      return 'https://dummyimage.com/400x300/cccccc/666666&text=No+Image';
+    }
+    
+    console.log("ListingCard: Raw image value:", img);
+    
+    // Already a full URL
+    if (img.startsWith('http://') || img.startsWith('https://')) {
+      console.log("ListingCard: Using full URL:", img);
+      return img;
+    }
+    
+    // Relative path starting with /uploads/
+    if (img.startsWith('/uploads/')) {
+      const fullUrl = `${BACKEND_URL}${img}`;
+      console.log("ListingCard: Built URL from /uploads/ path:", fullUrl);
+      return fullUrl;
+    }
+    
+    // Relative path starting with /
+    if (img.startsWith('/')) {
+      const fullUrl = `${BACKEND_URL}${img}`;
+      console.log("ListingCard: Built URL from / path:", fullUrl);
+      return fullUrl;
+    }
+    
+    // Just filename
+    const fullUrl = `${BACKEND_URL}/uploads/${img}`;
+    console.log("ListingCard: Built URL from filename:", fullUrl);
+    return fullUrl;
   };
+
+  const rawImage = listing.images?.[0] || listing.image;
   const propertyImage = getImageUrl(rawImage);
   const propertyLocation = listing.addressText || listing.location || 'Location not specified';
 
