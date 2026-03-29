@@ -36,7 +36,9 @@ const RegisterPage = () => {
       return;
     }
 
+    setLoading(true);
     const result = await register(formData); 
+    setLoading(false);
 
     console.log("Result:", result);
 
@@ -48,40 +50,40 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-md w-full">
         {/* Header */}
         <div className="text-center mb-10">
           <div className="flex justify-center items-center space-x-2 mb-4">
-            <Home className="h-10 w-10 text-secondary" />
-            <span className="text-3xl font-bold text-foreground">RENTEASE</span>
+            <Home className="h-10 w-10 text-orange-500" />
+            <span className="text-3xl font-bold text-gray-900 dark:text-white">RENTEASE</span>
           </div>
-          <h2 className="text-4xl font-extrabold text-foreground mb-2">
+          <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">
             Create Your Account
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-lg text-gray-600 dark:text-gray-300">
             Join us to find your perfect rental space or list your property
           </p>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             Already have an account?{' '}
-            <Link to="/login" className="font-medium text-secondary hover:text-secondary/80 transition-colors">
+            <Link to="/login" className="font-medium text-orange-500 hover:text-orange-400 transition-colors">
               Sign in here
             </Link>
           </p>
         </div>
 
-        <div className="bg-card rounded-2xl shadow-xl p-8 border border-border">
-          <form onSubmit={handleSubmit} className="space-y-6" data-testid="register-form">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 transition-colors duration-300">
+          <form onSubmit={handleSubmit} className="space-y-5" data-testid="register-form">
             {error && (
-              <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
+              <div className="rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 p-4">
                 <p className="text-sm text-red-600 dark:text-red-400 font-medium" data-testid="register-error">{error}</p>
               </div>
             )}
 
             {/* Name */}
             <div>
-              <label htmlFor="name" className="block text-sm font-semibold text-foreground mb-2">
-                Full Name <span className="text-secondary">*</span>
+              <label htmlFor="name" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                Full Name <span className="text-orange-500">*</span>
               </label>
               <input
                 id="name"
@@ -89,7 +91,7 @@ const RegisterPage = () => {
                 type="text"
                 required
                 data-testid="register-name-input"
-                className="w-full px-4 py-3 rounded-xl transition-all bg-white dark:bg-gray-800 text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-400 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
                 placeholder="Enter your full name"
                 value={formData.name}
                 onChange={handleChange}
@@ -98,8 +100,8 @@ const RegisterPage = () => {
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-foreground mb-2">
-                Email Address <span className="text-secondary">*</span>
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                Email Address <span className="text-orange-500">*</span>
               </label>
               <input
                 id="email"
@@ -108,7 +110,7 @@ const RegisterPage = () => {
                 autoComplete="email"
                 required
                 data-testid="register-email-input"
-                className="w-full px-4 py-3 border border-border placeholder-muted-foreground text-foreground bg-background rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
+                className="w-full px-4 py-3 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
                 placeholder="you@example.com"
                 value={formData.email}
                 onChange={handleChange}
@@ -117,8 +119,8 @@ const RegisterPage = () => {
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-foreground mb-2">
-                Password <span className="text-secondary">*</span>
+              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                Password <span className="text-orange-500">*</span>
               </label>
               <input
                 id="password"
@@ -127,7 +129,7 @@ const RegisterPage = () => {
                 autoComplete="new-password"
                 required
                 data-testid="register-password-input"
-                className="w-full px-4 py-3 border border-border placeholder-muted-foreground text-foreground bg-background rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
+                className="w-full px-4 py-3 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
                 placeholder="At least 6 characters"
                 value={formData.password}
                 onChange={handleChange}
@@ -136,8 +138,8 @@ const RegisterPage = () => {
 
             {/* Confirm Password */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-foreground mb-2">
-                Confirm Password <span className="text-secondary">*</span>
+              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                Confirm Password <span className="text-orange-500">*</span>
               </label>
               <input
                 id="confirmPassword"
@@ -146,7 +148,7 @@ const RegisterPage = () => {
                 autoComplete="new-password"
                 required
                 data-testid="register-confirm-password-input"
-                className="w-full px-4 py-3 border border-border placeholder-muted-foreground text-foreground bg-background rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
+                className="w-full px-4 py-3 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
                 placeholder="Re-enter password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
@@ -154,8 +156,8 @@ const RegisterPage = () => {
             </div>
 
             {/* Info Note */}
-            <div className="bg-gradient-to-r from-secondary/10 to-accent/10 border border-secondary/20 rounded-xl p-4">
-              <p className="text-sm text-foreground">
+            <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
                 After signup, you'll be able to choose whether you want to be a <strong>Property Owner</strong> or a <strong>Customer</strong>.
               </p>
             </div>
@@ -166,7 +168,7 @@ const RegisterPage = () => {
                 type="submit"
                 disabled={loading}
                 data-testid="register-submit-btn"
-                className="w-full flex justify-center items-center py-4 px-6 border border-transparent text-base font-semibold rounded-xl text-white bg-gradient-to-r from-secondary to-accent hover:from-[#d16a50] hover:to-[#c49565] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+                className="w-full flex justify-center items-center py-4 px-6 border border-transparent text-base font-semibold rounded-lg text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
               >
                 {loading ? (
                   <>
@@ -184,7 +186,7 @@ const RegisterPage = () => {
           </form>
         </div>
 
-        <p className="mt-8 text-center text-sm text-muted-foreground">
+        <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
           By signing up, you agree to our Terms of Service and Privacy Policy
         </p>
       </div>

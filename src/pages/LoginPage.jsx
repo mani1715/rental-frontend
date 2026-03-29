@@ -46,21 +46,21 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-10">
           <div className="flex justify-center items-center space-x-2 mb-4">
             <Home className="h-10 w-10 text-orange-500" />
-            <span className="text-3xl font-bold text-white">RENTEASE</span>
+            <span className="text-3xl font-bold text-gray-900 dark:text-white">RENTEASE</span>
           </div>
-          <h2 className="text-4xl font-extrabold text-white mb-2" data-testid="login-title">
+          <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-2" data-testid="login-title">
             Welcome Back
           </h2>
-          <p className="text-lg text-gray-300">
+          <p className="text-lg text-gray-600 dark:text-gray-300">
             Sign in to your account
           </p>
-          <p className="mt-2 text-sm text-gray-400">
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             Don't have an account?{' '}
             <Link to="/register" className="font-medium text-orange-500 hover:text-orange-400 transition-colors" data-testid="register-link">
               Create one here
@@ -69,12 +69,12 @@ const LoginPage = () => {
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 transition-colors duration-300">
           <form onSubmit={handleSubmit} data-testid="login-form">
             {/* Error Message */}
             {error && (
-              <div className="mb-6 rounded-lg bg-red-50 border border-red-200 p-4">
-                <p className="text-sm text-red-600 font-medium" data-testid="login-error">{error}</p>
+              <div className="mb-6 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 p-4">
+                <p className="text-sm text-red-600 dark:text-red-400 font-medium" data-testid="login-error">{error}</p>
               </div>
             )}
 
@@ -82,7 +82,7 @@ const LoginPage = () => {
             <div className="flex flex-col gap-5">
               {/* Email Field */}
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Email Address <span className="text-orange-500">*</span>
                 </label>
                 <input
@@ -92,7 +92,7 @@ const LoginPage = () => {
                   autoComplete="email"
                   required
                   data-testid="login-email-input"
-                  className="w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                  className="w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -101,7 +101,7 @@ const LoginPage = () => {
 
               {/* Password Field */}
               <div>
-                <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="password" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Password <span className="text-orange-500">*</span>
                 </label>
                 <input
@@ -111,7 +111,7 @@ const LoginPage = () => {
                   autoComplete="current-password"
                   required
                   data-testid="login-password-input"
-                  className="w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                  className="w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -144,7 +144,7 @@ const LoginPage = () => {
         </div>
 
         {/* Footer */}
-        <p className="mt-8 text-center text-sm text-gray-400">
+        <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
           By signing in, you agree to our Terms of Service and Privacy Policy
         </p>
       </div>

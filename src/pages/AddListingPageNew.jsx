@@ -253,6 +253,10 @@ const AddListingPageNew = () => {
   // Helper function to get full image URL
   const getFullImageUrl = (url) => {
     if (!url) return 'https://dummyimage.com/150x150/cccccc/666666&text=No+Image';
+    // If it's a blob URL (local preview), return as is
+    if (url.startsWith('blob:')) {
+      return url;
+    }
     // If it's already a full URL, return as is
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
@@ -263,6 +267,29 @@ const AddListingPageNew = () => {
     }
     // Otherwise, assume it's a path that needs the full URL
     return `${API_URL}/${url}`;
+  };
+
+  // Show immediate preview using URL.createObjectURL
+  const handleFileInput = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const files = Array.from(e.target.files);
+      
+      // Show immediate local preview
+      const localPreviews = files
+        .filter(file => file.type.startsWith('image/'))
+        .map(file => URL.createObjectURL(file));
+      
+      if (localPreviews.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          images: [...prev.images, ...localPreviews]
+        }));
+        console.log("Local previews added:", localPreviews);
+      }
+      
+      // Then upload to server (optional - can be done on form submit)
+      // uploadFiles(files);
+    }
   };
 
   const uploadFiles = async (files) => {
@@ -349,13 +376,12 @@ const AddListingPageNew = () => {
     }
   }, [token]);
 
-  const handleFileInput = (e) => {
-    if (e.target.files && e.target.files.length > 0) {
-      uploadFiles(Array.from(e.target.files));
-    }
-  };
-
   const removeImage = (indexToRemove) => {
+    // Revoke blob URL to prevent memory leak
+    const urlToRemove = formData.images[indexToRemove];
+    if (urlToRemove && urlToRemove.startsWith('blob:')) {
+      URL.revokeObjectURL(urlToRemove);
+    }
     setFormData(prev => ({
       ...prev,
       images: prev.images.filter((_, index) => index !== indexToRemove)
