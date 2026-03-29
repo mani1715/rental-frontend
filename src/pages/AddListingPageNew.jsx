@@ -263,12 +263,19 @@ const AddListingPageNew = () => {
 
   // Helper function to get full image URL
   const getFullImageUrl = (url) => {
-    const BACKEND_URL = "https://rental-backend-production-3c03.up.railway.app";
-    
-    if (!url) {
-      console.log("getFullImageUrl: No URL provided");
-      return 'https://dummyimage.com/150x150/cccccc/666666&text=No+Image';
-    }
+  const BACKEND_URL = "https://rental-backend-production-3c03.up.railway.app";
+  
+  if (!url) {
+    return 'https://dummyimage.com/150x150/cccccc/666666&text=No+Image';
+  }
+
+  // ✅ ADD THIS BLOCK HERE
+  if (url.includes('blob:')) {
+    console.warn("Invalid blob URL detected:", url);
+    return 'https://dummyimage.com/150x150/cccccc/666666&text=Invalid+Image';
+  }
+
+  // rest of your code...
     
     console.log("getFullImageUrl input:", url);
     
