@@ -5,6 +5,16 @@ import axios from 'axios';
 
 const API_URL = BASE_URL;
 
+// Helper function to get auth header
+const getAuthHeader = () => {
+  const token = localStorage.getItem('token');
+  console.log("Token being sent:", token);
+  if (!token) {
+    return {};
+  }
+  return { Authorization: `Bearer ${token}` };
+};
+
 const OwnerProfilePage = () => {
   const [formData, setFormData] = useState({
     phone: '',
@@ -19,12 +29,21 @@ const OwnerProfilePage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Check if token exists
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.log('No token found, redirecting to login');
+      navigate('/login');
+      return;
+    }
     fetchProfile();
-  }, []);
+  }, [navigate]);
 
   const fetchProfile = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/owner/profile`);
+      const response = await axios.get(`${API_URL}/api/owner/profile`, {
+        headers: getAuthHeader()
+      });
       if (response.data.success) {
         setFormData({
           phone: response.data.profile.phone || '',
@@ -55,7 +74,9 @@ const OwnerProfilePage = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${API_URL}/api/owner/profile`, formData);
+      const response = await axios.post(`${API_URL}/api/owner/profile`, formData, {
+        headers: getAuthHeader()
+      });
 
       if (response.data.success) {
         setSuccess('Profile saved successfully!');

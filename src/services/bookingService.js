@@ -5,7 +5,12 @@ const API_URL = `${BASE_URL}/api/bookings`;
 
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  console.log("Token being sent:", token);
+  if (!token) {
+    console.warn("No token found in localStorage");
+    return {};
+  }
+  return { Authorization: `Bearer ${token}` };
 };
 
 export const bookingService = {

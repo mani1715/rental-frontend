@@ -6,8 +6,19 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { ArrowLeft, User } from 'lucide-react';
+import BASE_URL from '../config/api.js';
 
 const API_URL = BASE_URL;
+
+// Helper function to get auth header
+const getAuthHeader = () => {
+  const token = localStorage.getItem('token');
+  console.log("Token being sent:", token);
+  if (!token) {
+    return {};
+  }
+  return { Authorization: `Bearer ${token}` };
+};
 
 export default function OwnerBookings() {
   const navigate = useNavigate();
@@ -28,7 +39,7 @@ export default function OwnerBookings() {
     try {
       const response = await axios.get(
         `${API_URL}/api/bookings/owner`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: getAuthHeader() }
       );
 
       if (response.data.success) {

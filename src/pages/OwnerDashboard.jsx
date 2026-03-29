@@ -1,14 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import BASE_URL from '../config/api.js';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { Plus, Home, Star, Eye, MessageCircle, Trash2, Edit, Check, X, Mail, Phone } from 'lucide-react';
 
 const API_URL = BASE_URL;
 
+// Helper function to get auth header
+const getAuthHeader = () => {
+  const token = localStorage.getItem('token');
+  console.log("Token being sent:", token);
+  if (!token) {
+    return {};
+  }
+  return { Authorization: `Bearer ${token}` };
+};
+
 const OwnerDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [profile, setProfile] = useState(null);
@@ -25,11 +36,22 @@ const OwnerDashboard = () => {
   }, [user]);
 
   const fetchData = async () => {
+    // Check if token exists
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.log('No token found, redirecting to login');
+      navigate('/login');
+      return;
+    }
+
     try {
       setLoading(true);
 
       // Fetch owner's listings
-const listingsRes = await axios.get(`${API_URL}/api/listings`, { params: { ownerId: user.id } });
+      const listingsRes = await axios.get(`${API_URL}/api/listings`, { 
+        params: { ownerId: user.id },
+        headers: getAuthHeader()
+      });
       if (listingsRes.data.success) {
         console.log('Owner listings fetched:', listingsRes.data.listings);
         setListings(listingsRes.data.listings);
@@ -38,7 +60,9 @@ const listingsRes = await axios.get(`${API_URL}/api/listings`, { params: { owner
 
       // Fetch owner's bookings
       try {
-        const bookingsRes = await axios.get(`${API_URL}/api/bookings/owner`);
+        const bookingsRes = await axios.get(`${API_URL}/api/bookings/owner`, {
+          headers: getAuthHeader()
+        });
         if (bookingsRes.data.success) {
           setBookings(bookingsRes.data.bookings);
           const pending = bookingsRes.data.bookings.filter(b => b.status === 'pending').length;
@@ -50,7 +74,9 @@ const listingsRes = await axios.get(`${API_URL}/api/listings`, { params: { owner
 
       // Fetch owner profile
       try {
-        const profileRes = await axios.get(`${API_URL}/api/owner/profile`);
+        const profileRes = await axios.get(`${API_URL}/api/owner/profile`, {
+          headers: getAuthHeader()
+        });
         if (profileRes.data.success) {
           setProfile(profileRes.data.profile);
         }
@@ -70,7 +96,9 @@ const listingsRes = await axios.get(`${API_URL}/api/listings`, { params: { owner
     if (!window.confirm('Are you sure you want to delete this listing?')) return;
 
     try {
-      await axios.delete(`${API_URL}/api/listings/${id}`);
+      await axios.delete(`${API_URL}/api/listings/${id}`, {
+        headers: getAuthHeader()
+      });
       setListings(listings.filter(l => (l.id || l._id) !== id));
     } catch (error) {
       alert('Failed to delete listing');
