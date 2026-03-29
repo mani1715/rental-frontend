@@ -56,38 +56,37 @@ export const ListingCard = ({ listing }) => {
 
   // Get image URL with proper backend URL
   const getImageUrl = (img) => {
-    if (!img) {
-      console.log("ListingCard: No image for listing:", listing.title);
-      return 'https://dummyimage.com/400x300/cccccc/666666&text=No+Image';
-    }
-    
-    console.log("ListingCard: Raw image value:", img);
-    
-    // Already a full URL
-    if (img.startsWith('http://') || img.startsWith('https://')) {
-      console.log("ListingCard: Using full URL:", img);
-      return img;
-    }
-    
-    // Relative path starting with /uploads/
-    if (img.startsWith('/uploads/')) {
-      const fullUrl = `${BACKEND_URL}${img}`;
-      console.log("ListingCard: Built URL from /uploads/ path:", fullUrl);
-      return fullUrl;
-    }
-    
-    // Relative path starting with /
-    if (img.startsWith('/')) {
-      const fullUrl = `${BACKEND_URL}${img}`;
-      console.log("ListingCard: Built URL from / path:", fullUrl);
-      return fullUrl;
-    }
-    
-    // Just filename
-    const fullUrl = `${BACKEND_URL}/uploads/${img}`;
-    console.log("ListingCard: Built URL from filename:", fullUrl);
-    return fullUrl;
-  };
+  if (!img) {
+    console.log("ListingCard: No image for listing:", listing.title);
+    return 'https://dummyimage.com/400x300/cccccc/666666&text=No+Image';
+  }
+
+  console.log("ListingCard: Raw image value:", img);
+
+  // 🔥 FIX: BLOCK BLOB URLS
+  if (img.startsWith('blob:')) {
+    console.warn("❌ Blob URL detected and blocked:", img);
+    return 'https://dummyimage.com/400x300/cccccc/666666&text=Invalid+Image';
+  }
+
+  // ✅ Already full URL
+  if (img.startsWith('http://') || img.startsWith('https://')) {
+    return img;
+  }
+
+  // ✅ If path like /uploads/xxx.jpg
+  if (img.startsWith('/uploads/')) {
+    return `${BACKEND_URL}${img}`;
+  }
+
+  // ✅ If other relative path
+  if (img.startsWith('/')) {
+    return `${BACKEND_URL}${img}`;
+  }
+
+  // ✅ If filename only
+  return `${BACKEND_URL}/uploads/${img}`;
+};
 
   const rawImage = listing.images?.[0] || listing.image;
   const propertyImage = getImageUrl(rawImage);
