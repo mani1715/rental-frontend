@@ -538,14 +538,18 @@ const AddListingPageNew = () => {
     }
 
     // IMPORTANT: Filter out any blob URLs - only keep real server URLs
-    const validImages = formData.images.filter(url => {
-      if (!url) return false;
-      if (url.startsWith('blob:')) {
-        console.warn("Filtering out blob URL:", url);
-        return false;
-      }
-      return true;
-    });
+   const validImages = formData.images.filter(url => {
+  if (!url) return false;
+
+  // ❌ remove blob completely
+  if (url.startsWith('blob:')) return false;
+
+  // ❌ remove broken constructed URLs
+  if (url.includes('blob:')) return false;
+
+  // ✅ only allow real URLs
+  return url.startsWith('http://') || url.startsWith('https://');
+});
 
     console.log("=== Submitting Listing ===");
     console.log("Original images:", formData.images);
