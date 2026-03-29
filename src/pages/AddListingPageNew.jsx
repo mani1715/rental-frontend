@@ -323,34 +323,63 @@ const AddListingPageNew = () => {
   const handleGenerateDescription = async () => {
     if (aiLoading) return;
 
+    // Check if required fields are filled
     if (!formData.title || !formData.type || !formData.addressText || !formData.price) {
       alert('Please fill in Title, Type, Location, and Price before generating description.');
       return;
     }
 
+    console.log("Calling AI API...");
+    console.log("API URL:", `${API_URL}/api/ai/generate-description`);
+    
+    const token = localStorage.getItem('token');
+    console.log("Token being sent:", token);
+    
+    if (!token) {
+      alert('Please login to use AI description generation.');
+      return;
+    }
+
     setAiLoading(true);
     try {
+      const requestData = {
+        title: formData.title,
+        type: formData.type,
+        location: formData.addressText,
+        price: formData.price,
+        facilities: formData.facilities.join(', ') || 'Basic amenities'
+      };
+      
+      console.log("Request data:", requestData);
+      
       const response = await axios.post(
         `${API_URL}/api/ai/generate-description`,
-        {
-          title: formData.title,
-          type: formData.type,
-          location: formData.addressText,
-          price: formData.price,
-          facilities: formData.facilities.join(', ') || 'Basic amenities'
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
+        requestData,
+        { 
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}` 
+          } 
+        }
       );
 
+      console.log("AI response:", response.data);
+      
       if (response.data.success) {
         setFormData(prev => ({
           ...prev,
           description: response.data.description
         }));
+      } else {
+        alert(response.data.message || 'Failed to generate description');
       }
-    } catch (error) {
-      console.error('Error generating description:', error);
-      alert(error.response?.data?.message || error.response?.data?.detail || 'Failed to generate description');
+    } catch (err) {
+      console.error('AI error:', err.response?.data || err.message);
+      const errorMessage = err.response?.data?.message || 
+                          err.response?.data?.detail || 
+                          err.message ||
+                          'Failed to generate description. Please try again.';
+      alert(errorMessage);
     } finally {
       setAiLoading(false);
     }
@@ -552,7 +581,7 @@ const AddListingPageNew = () => {
                   <button
                     type="button"
                     onClick={handleGenerateDescription}
-                    disabled={aiLoading}
+                    disabled={aiLoading || !formData.title || !formData.addressText || !formData.price}
                     data-testid="ai-generate-btn"
                     className="mt-2 inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium rounded-md hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
