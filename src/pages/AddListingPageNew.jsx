@@ -250,41 +250,83 @@ const AddListingPageNew = () => {
     setFormData(prev => ({ ...prev, images: urls }));
   };
 
+  // Helper function to get full image URL
+  const getFullImageUrl = (url) => {
+    if (!url) return 'https://dummyimage.com/150x150/cccccc/666666&text=No+Image';
+    // If it's already a full URL, return as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    // If it's a relative path, prepend the API URL
+    if (url.startsWith('/')) {
+      return `${API_URL}${url}`;
+    }
+    // Otherwise, assume it's a path that needs the full URL
+    return `${API_URL}/${url}`;
+  };
+
   const uploadFiles = async (files) => {
     if (files.length === 0) return;
     setUploadingImages(true);
 
+    console.log("=== Starting Image Upload ===");
+    console.log("Files to upload:", files.length);
+
     try {
       const uploadedUrls = [];
       for (const file of files) {
-        if (!file.type.startsWith('image/')) continue;
+        if (!file.type.startsWith('image/')) {
+          console.log("Skipping non-image file:", file.name);
+          continue;
+        }
 
-        const fileFormData = new FormData();
-        fileFormData.append('file', file);
+        console.log("Uploading file:", file.name, "Size:", file.size);
 
-        const response = await axios.post(`${API_URL}/api/upload`, fileFormData, {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const token = localStorage.getItem('token');
+        console.log("Token present:", !!token);
+
+        const response = await axios.post(`${API_URL}/api/upload`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
             Authorization: `Bearer ${token}`
           }
         });
 
+        console.log("Upload response:", response.data);
+
         if (response.data.success) {
-          uploadedUrls.push(response.data.url);
+          const imageUrl = response.data.url || response.data.image || response.data.imageUrl;
+          console.log("Image URL received:", imageUrl);
+          
+          // Get the full URL
+          const fullUrl = getFullImageUrl(imageUrl);
+          console.log("Full Image URL:", fullUrl);
+          
+          uploadedUrls.push(fullUrl);
+        } else {
+          console.error("Upload failed:", response.data.message);
         }
       }
+
+      console.log("All uploaded URLs:", uploadedUrls);
 
       if (uploadedUrls.length > 0) {
         setFormData(prev => ({
           ...prev,
           images: [...prev.images, ...uploadedUrls]
         }));
+        console.log("Images added to form data");
       }
     } catch (error) {
-      console.error('Error uploading images:', error);
+      console.error('=== Upload Error ===');
+      console.error('Error details:', error.response?.data || error.message);
       alert('Failed to upload some images. Please try again.');
     } finally {
       setUploadingImages(false);
+      console.log("=== Upload Complete ===");
     }
   };
 
@@ -739,23 +781,31 @@ const AddListingPageNew = () => {
                 <div className="mb-4">
                   <h3 className="text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">Uploaded Images ({formData.images.length})</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {formData.images.map((url, index) => (
-                      <div key={index} className="relative group rounded-md overflow-hidden bg-gray-100 aspect-square">
-                        <img
-                          src={url}
-                          alt={`Uploaded preview ${index + 1}`}
-                          className="w-full h-full object-cover"
-                          onError={(e) => { e.target.src = 'https://dummyimage.com/150x150/cccccc/666666&text=No+Image'; }}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
+                    {formData.images.map((url, index) => {
+                      const displayUrl = getFullImageUrl(url);
+                      console.log(`Image ${index + 1} URL:`, displayUrl);
+                      return (
+                        <div key={index} className="relative group rounded-md overflow-hidden bg-gray-100 aspect-square">
+                          <img
+                            src={displayUrl}
+                            alt={`Uploaded preview ${index + 1}`}
+                            className="w-full h-full object-cover"
+                            onLoad={() => console.log(`Image ${index + 1} loaded successfully`)}
+                            onError={(e) => { 
+                              console.error(`Image ${index + 1} failed to load:`, displayUrl);
+                              e.target.src = 'https://dummyimage.com/150x150/cccccc/666666&text=Load+Error'; 
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
