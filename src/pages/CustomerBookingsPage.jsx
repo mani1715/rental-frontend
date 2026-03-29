@@ -101,9 +101,10 @@ export default function CustomerBookingsPage() {
                     {/* Property Image */}
                     <div className="md:w-64 h-48 md:h-auto">
                       <img
-                        src={booking.property?.images?.[0] || '/placeholder.jpg'}
+                        src={booking.property?.images?.[0] || 'https://dummyimage.com/400x300/cccccc/666666&text=No+Image'}
                         alt={booking.property?.title}
                         className="w-full h-full object-cover"
+                        onError={(e) => { e.target.src = 'https://dummyimage.com/400x300/cccccc/666666&text=No+Image'; }}
                       />
                     </div>
 

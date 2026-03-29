@@ -745,7 +745,7 @@ const AddListingPageNew = () => {
                           src={url}
                           alt={`Uploaded preview ${index + 1}`}
                           className="w-full h-full object-cover"
-                          onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=Image+Error'; }}
+                          onError={(e) => { e.target.src = 'https://dummyimage.com/150x150/cccccc/666666&text=No+Image'; }}
                         />
                         <button
                           type="button"

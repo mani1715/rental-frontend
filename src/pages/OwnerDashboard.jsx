@@ -288,8 +288,9 @@ const OwnerDashboard = () => {
                           <div className="h-10 w-10 flex-shrink-0">
                             <img
                               className="h-10 w-10 rounded-lg object-cover"
-                              src={listing.images?.[0] || '/placeholder.jpg'}
+                              src={listing.images?.[0] || 'https://dummyimage.com/100x100/cccccc/666666&text=No+Image'}
                               alt={listing.title}
+                              onError={(e) => { e.target.src = 'https://dummyimage.com/100x100/cccccc/666666&text=No+Image'; }}
                             />
                           </div>
                           <div className="ml-4">

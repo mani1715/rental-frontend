@@ -3,11 +3,13 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import BASE_URL from '../config/api.js';
 import { Button } from './ui/button';
 
+const FALLBACK_IMAGE = 'https://dummyimage.com/800x600/cccccc/666666&text=No+Image';
+
 export const ImageCarousel = ({ images, title }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const getImageUrl = (img) => {
-    if (!img) return 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2';
+    if (!img) return FALLBACK_IMAGE;
     if (img.startsWith('http')) return img;
     if (img.startsWith('/uploads/')) return `${BASE_URL}${img}`;
     return `${BASE_URL}/uploads/${img}`;
@@ -37,7 +39,7 @@ export const ImageCarousel = ({ images, title }) => {
           alt={`${title} - Image ${currentIndex + 1}`}
           className="w-full h-full object-cover transition-opacity duration-300"
           data-testid={`carousel-image-${currentIndex}`}
-          onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2'; }}
+          onError={(e) => { e.target.src = FALLBACK_IMAGE; }}
         />
         
         {images.length > 1 && (
@@ -102,7 +104,7 @@ export const ImageCarousel = ({ images, title }) => {
                 src={getImageUrl(image)}
                 alt={`Thumbnail ${index + 1}`}
                 className="w-full h-full object-cover"
-                onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2'; }}
+                onError={(e) => { e.target.src = FALLBACK_IMAGE; }}
               />
             </button>
           ))}

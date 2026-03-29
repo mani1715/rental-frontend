@@ -157,7 +157,7 @@ export default function ListingDetailPage() {
 
         {/* Image Carousel */}
         <div className="mb-8">
-          <ImageCarousel images={listing.images?.length > 0 ? listing.images : ['/placeholder.jpg']} />
+          <ImageCarousel images={listing.images?.length > 0 ? listing.images : ['https://dummyimage.com/800x600/cccccc/666666&text=No+Image']} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
